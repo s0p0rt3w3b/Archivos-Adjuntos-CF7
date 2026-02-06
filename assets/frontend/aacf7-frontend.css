@@ -1,0 +1,120 @@
+.aacf7-wrap {
+	border: 1px solid #e5e7eb;
+	padding: 14px;
+	border-radius: 10px;
+	background: #fff;
+}
+
+.aacf7-title {
+	font-weight: 600;
+	margin-bottom: 10px;
+}
+
+.aacf7-dropzone {
+	border: 2px dashed #cbd5e1;
+	border-radius: 10px;
+	padding: 16px;
+	display: flex;
+	gap: 10px;
+	align-items: center;
+	justify-content: space-between;
+	cursor: pointer;
+	background: #f8fafc;
+}
+
+.aacf7-dropzone.is-dragover {
+	border-color: #2271b1;
+	background: #eef6ff;
+}
+
+.aacf7-dropzone-text {
+	font-size: 14px;
+	color: #334155;
+}
+
+.aacf7-btn {
+	background: #2271b1;
+	color: #fff;
+	border: 0;
+	border-radius: 8px;
+	padding: 10px 14px;
+	cursor: pointer;
+}
+
+.aacf7-btn:hover {
+	background: #135e96;
+}
+
+.aacf7-input {
+	display: none;
+}
+
+.aacf7-note {
+	margin-top: 10px;
+	font-size: 12px;
+	color: #64748b;
+}
+
+.aacf7-list {
+	margin-top: 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.aacf7-item {
+	border: 1px solid #e2e8f0;
+	background: #ffffff;
+	border-radius: 10px;
+	padding: 10px 12px;
+}
+
+.aacf7-item-main {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+
+.aacf7-item-name {
+	font-weight: 600;
+	color: #0f172a;
+}
+
+.aacf7-item-meta {
+	font-size: 12px;
+	color: #64748b;
+	margin-left: auto;
+}
+
+.aacf7-item-actions {
+	margin-top: 8px;
+	display: flex;
+	justify-content: flex-end;
+}
+
+.aacf7-item-remove {
+	background: transparent;
+	border: 1px solid #e2e8f0;
+	border-radius: 8px;
+	padding: 6px 10px;
+	cursor: pointer;
+	color: #0f172a;
+}
+
+.aacf7-item-remove:hover {
+	border-color: #94a3b8;
+}
+
+.aacf7-progress {
+	margin-top: 8px;
+	height: 8px;
+	background: #f1f5f9;
+	border-radius: 999px;
+	overflow: hidden;
+}
+
+.aacf7-progress-bar {
+	height: 100%;
+	background: #22c55e;
+	width: 0%;
+}

@@ -13,11 +13,22 @@
 		return (Math.round(b * 10) / 10) + ' ' + units[i];
 	}
 
+	function getMaxFiles($wrap) {
+		const n = parseInt($wrap.attr('data-max-files') || '1', 10);
+		return Number.isFinite(n) && n > 0 ? n : 1;
+	}
+
 	function initUploader($wrap) {
 		const $dropzone = $wrap.find('.aacf7-dropzone');
 		const $input = $wrap.find('.aacf7-input');
 		const $list = $wrap.find('.aacf7-list');
 		const $template = $wrap.find('.aacf7-item-template')[0];
+
+		const maxFiles = getMaxFiles($wrap);
+
+		function currentCount() {
+			return $list.find('.aacf7-item').length;
+		}
 
 		function addFileItem(file) {
 			const frag = document.importNode($template.content, true);
@@ -35,7 +46,13 @@
 
 		function handleFiles(fileList) {
 			const files = Array.from(fileList || []);
-			files.forEach(addFileItem);
+			for (const file of files) {
+				if (currentCount() >= maxFiles) {
+					// MVP: luego esto será mensaje configurable
+					break;
+				}
+				addFileItem(file);
+			}
 		}
 
 		$wrap.on('click', '[data-aacf7-browse="1"]', function () {
@@ -44,6 +61,7 @@
 
 		$input.on('change', function (e) {
 			handleFiles(e.target.files);
+			$input.val(''); // permite re-seleccionar el mismo archivo
 		});
 
 		$dropzone.on('dragover', function (e) {

@@ -28,54 +28,14 @@
 		});
 	}
 
-	function clamp(n, min, max) {
-		return Math.min(max, Math.max(min, n));
-	}
-
-	function getPickrAppForButton(btn) {
-		// Pickr crea un .pcr-app global, pero lo “asocia” al botón que lo abrió.
-		// Buscamos el app visible más cercano en el DOM (fallback: el único visible).
-		var apps = Array.prototype.slice.call(document.querySelectorAll('.pcr-app'));
-		if (!apps.length) return null;
-
-		// 1) si hay uno visible (display != none), usar ese
-		var visible = apps.find(function (a) {
-			return a.offsetParent !== null && getComputedStyle(a).display !== 'none';
+	function closeAllInlinePickers(exceptCombo) {
+		document.querySelectorAll('.color-picker-combo[data-pickr-open="1"]').forEach(function (combo) {
+			if (exceptCombo && combo === exceptCombo) return;
+			combo.dataset.pickrOpen = '0';
 		});
-		return visible || apps[apps.length - 1];
 	}
 
-	function positionAppUnderCombo(app, combo) {
-		if (!app || !combo) return;
-
-		var r = combo.getBoundingClientRect();
-		var gap = 8;
-
-		// Asegurar medidas del app (si aún no tiene, forzar layout)
-		var appW = app.offsetWidth || 260;
-		var appH = app.offsetHeight || 320;
-
-		var vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-		var vh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-
-		var left = clamp(r.left, 8, vw - appW - 8);
-
-		// Si no hay espacio abajo, poner arriba
-		var preferTop = r.bottom + gap;
-		var top;
-		if (preferTop + appH <= vh - 8) {
-			top = preferTop;
-		} else {
-			top = clamp(r.top - gap - appH, 8, vh - appH - 8);
-		}
-
-		app.style.position = 'fixed';
-		app.style.left = left + 'px';
-		app.style.top = top + 'px';
-		app.style.zIndex = '999999';
-	}
-
-	function initPickr(wrapper) {
+	function initInlinePickr(wrapper) {
 		if (!window.Pickr) return;
 
 		wrapper.querySelectorAll('.color-picker-combo').forEach(function (combo) {
@@ -86,32 +46,31 @@
 			var swatch = combo.querySelector('.color-swatch');
 			if (!input || !swatch) return;
 
+			// Valor inicial
 			var initial = input.value || combo.dataset.color || '#0073aa';
 			input.value = initial;
+			combo.dataset.color = initial;
 			swatch.style.background = initial;
 
-			// botón overlay clickeable
-			var btn = document.createElement('button');
-			btn.type = 'button';
-			btn.className = 'acf7-pickr-btn';
-			btn.setAttribute('aria-label', 'Seleccionar un color');
-			btn.style.all = 'unset';
-			btn.style.position = 'absolute';
-			btn.style.inset = '0';
-			btn.style.cursor = 'pointer';
-			btn.style.zIndex = '2';
-			combo.appendChild(btn);
-
-			// ocultamos el input nativo, pero queda para POST
+			// Ocultamos input nativo pero sigue enviándose por POST
 			input.style.display = 'none';
 
+			// Contenedor inline (debajo del combo)
+			var inlineHost = document.createElement('div');
+			inlineHost.className = 'acf7-pickr-inline';
+			combo.appendChild(inlineHost);
+
+			// Estado cerrado por defecto
+			combo.dataset.pickrOpen = '0';
+
 			var pickr = Pickr.create({
-				el: btn,
+				el: inlineHost,
 				theme: 'nano',
 				default: initial,
+				inline: true,          // <- clave: NO flotante
+				autoReposition: false, // no aplica en inline
 				lockOpacity: true,
 				comparison: false,
-				useAsButton: true,
 				components: {
 					preview: true,
 					opacity: false,
@@ -134,31 +93,31 @@
 				input.dispatchEvent(new Event('change', { bubbles: true }));
 			}
 
-			function reposition() {
-				var app = getPickrAppForButton(btn);
-				positionAppUnderCombo(app, combo);
-			}
-
-			pickr.on('show', function () {
-				// doble rAF para asegurar que el DOM del picker ya esté medible
-				window.requestAnimationFrame(function () {
-					window.requestAnimationFrame(reposition);
-				});
-			});
-
 			pickr.on('change', function (color) {
 				setColor(color.toHEXA().toString());
-				// mientras arrastra, mantener bien posicionado
-				reposition();
 			});
 
 			pickr.on('save', function (color) {
 				setColor(color.toHEXA().toString());
-				pickr.hide();
+				// al guardar, cerramos (opcional)
+				combo.dataset.pickrOpen = '0';
 			});
 
-			window.addEventListener('scroll', reposition, true);
-			window.addEventListener('resize', reposition);
+			// Click en todo el combo abre/cierra (y cierra otros)
+			combo.addEventListener('click', function (e) {
+				// si el click viene del picker (inputs internos), no togglear
+				if (e.target && (e.target.closest('.pcr-app') || e.target.closest('.pcr-interaction'))) {
+					return;
+				}
+
+				var open = combo.dataset.pickrOpen === '1';
+				if (!open) {
+					closeAllInlinePickers(combo);
+					combo.dataset.pickrOpen = '1';
+				} else {
+					combo.dataset.pickrOpen = '0';
+				}
+			});
 		});
 	}
 
@@ -173,7 +132,7 @@
 		function activate(index) {
 			buttons.forEach(function (b, i) { b.classList.toggle('active', i === index); });
 			panels.forEach(function (p, i) { p.classList.toggle('active', i === index); });
-			initPickr(wrapper);
+			initInlinePickr(wrapper);
 		}
 
 		buttons.forEach(function (btn, idx) {
@@ -190,8 +149,15 @@
 
 		updateStorageSubboxes(wrapper);
 		updateFormatActives(wrapper);
-		initPickr(wrapper);
+		initInlinePickr(wrapper);
 	}
+
+	document.addEventListener('click', function (e) {
+		// click fuera de cualquier combo => cerrar todos
+		if (!e.target.closest('.color-picker-combo')) {
+			closeAllInlinePickers(null);
+		}
+	});
 
 	document.addEventListener('DOMContentLoaded', function () {
 		document.querySelectorAll('.acf7-wrapper[data-aacf7-settings="1"]').forEach(initWrapper);

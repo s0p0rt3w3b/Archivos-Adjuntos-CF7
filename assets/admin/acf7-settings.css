@@ -870,3 +870,39 @@
 .acf7-wrapper #tab-estilos .acf7-field select.acf7-select:focus{
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='%23666' d='M5 13l5-6 5 6z'/%3E%3C/svg%3E") !important;
 }
+
+/* ===== Pickr inline (fix definitivo de posicionamiento) ===== */
+
+/* contenedor inline oculto/visible */
+.color-picker-combo .acf7-pickr-inline {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 999999;
+}
+
+/* cuando está abierto */
+.color-picker-combo[data-pickr-open="1"] .acf7-pickr-inline {
+  display: block;
+}
+
+/* el popup debe verse completo */
+.color-picker-combo {
+  overflow: visible !important;
+}
+
+/* look del picker dentro del admin */
+.color-picker-combo .pcr-app {
+  position: relative !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,.18) !important;
+  border: 1px solid rgba(0,0,0,.08) !important;
+}
+
+/* si hay poco espacio a la derecha, que no se corte */
+@media (max-width: 600px) {
+  .color-picker-combo .acf7-pickr-inline {
+    left: 0;
+    right: 0;
+  }
+}

@@ -26,8 +26,10 @@ final class Plugin {
 	}
 
 	private function init(): void {
+		// Initialize internationalization
 		(new I18n())->init();
 
+		// Show admin notice if Contact Form 7 is not active
 		add_action('admin_notices', function () {
 			if (!defined('WPCF7_VERSION')) {
 				echo '<div class="notice notice-warning"><p>'
@@ -36,6 +38,15 @@ final class Plugin {
 			}
 		});
 
+		/**
+		 * Initialize CF7 integration only if Contact Form 7 is active.
+		 * 
+		 * This conditional initialization ensures that:
+		 * - The plugin gracefully handles CF7 not being installed/active
+		 * - Form tags (adjuntos_cf7) are registered via wpcf7_init hook
+		 * - Admin UI panels and settings are properly configured
+		 * - Frontend and admin assets are enqueued when needed
+		 */
 		if (defined('WPCF7_VERSION')) {
 			(new CF7_Integration())->init();
 		}
